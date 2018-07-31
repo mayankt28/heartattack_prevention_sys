@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+
+ {% block head%}
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>
+    <script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+
+
+{% endblock %}
+
+{% block content %}
+
+
+<div class="row">
+    <div class="col-lg-4">
+<div id="chartContainer" style="height: 300px; width: 100%;"></div>
+{# <script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script> #}
+    </div>
+
+      <div class="col-lg-4">
+<div class="card" style="width: 18rem;">
+
+  <div class="card-body">
+    <h5 class="card-title">Pulse Rate (BPM)</h5>
+    <p id='bpm' class="card-text"></p>
+    
+  </div>
+</div>
+</div>
+
+
+
+
+{% block script %}
+<script>
+
+
+
+
+
+        socket = new WebSocket("ws://" + window.location.host + "/dashboard/");
+
+
+        socket.onmessage = function(e) {
+            console.log(e)
+            $("#bpm").html("<p>" + e.data + "</p>");
+            // console.log(e.data);
+            if(!data){
+                console.log(e.data.get[msg]);
+            }
+            data = parseInt(e.data)
+
+        }
+
+
+
+
+
+
+        function sendmsg() {
+            msg = $('#msg').val();
+            socket.send(msg);
+            $('#msg').val('');
+        }
+var data=0;
+
+window.onload = function () {
+
+var dps = []; // dataPoints
+var chart = new CanvasJS.Chart("chartContainer", {
+    title :{
+        text: "Pulse Rate (BPM)"
+    },
+    axisY: {
+        includeZero: false
+    },      
+    data: [{
+        type: "line",
+        dataPoints: dps
+    }]
+});
+
+var xVal = 0.0;
+var yVal = 0; 
+var updateInterval = 1000;
+var dataLength = 10; // number of dataPoints visible at any point
+
+var updateChart = function (count) {
+
+    count = count || 1;
+
+    for (var j = 0; j < count; j++) {
+        yVal = data//yVal +  Math.round(5 + Math.random() *(-5-5));
+        console.log(Math.round(5 + Math.random() *(-5-5)))
+        dps.push({
+            x: xVal,
+            y: yVal
+        });
+        xVal++;
+    }
+
+    if (dps.length > dataLength) {
+        dps.shift();
+    }
+
+    chart.render();
+};
+
+updateChart(dataLength);
+setInterval(function(){updateChart()}, updateInterval);
+
+}
+
+    </script>
+
+{% endblock %}
+{% endblock %}
